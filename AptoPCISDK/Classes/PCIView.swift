@@ -8,7 +8,7 @@
 import UIKit
 import WebKit
 
-public class PCIView: UIView, WKNavigationDelegate, WKUIDelegate, UIWebViewDelegate {
+public class PCIView: UIView, WKNavigationDelegate, WKUIDelegate {
   let webView = WKWebView(frame: .zero, configuration: WKWebViewConfiguration())
   var queue = OperationQueue()
   private let javascriptPrefix = "window.AptoPCISDK"
@@ -142,7 +142,7 @@ public extension PCIView {
   }
   
   func webView(_ webView: WKWebView, runJavaScriptAlertPanelWithMessage message: String,
-                      initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping () -> Void) {
+               initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping () -> Void) {
     let alertController = UIAlertController(title: nil, message: alertText(key: "wrongCode.message"), preferredStyle: .alert)
     alertController.addAction(UIAlertAction(title: alertText(key: "wrongCode.okAction"), style: .default, handler: { action in
       completionHandler()
@@ -152,7 +152,7 @@ public extension PCIView {
   }
   
   func webView(_ webView: WKWebView, runJavaScriptTextInputPanelWithPrompt prompt: String, defaultText: String?,
-                      initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping (String?) -> Void) {
+               initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping (String?) -> Void) {
     let alertController = UIAlertController(title: nil, message: alertText(key: "inputCode.message"), preferredStyle: .alert)
     alertController.addTextField(configurationHandler: { textField in
       textField.text = defaultText
@@ -173,7 +173,7 @@ public extension PCIView {
     UIApplication.topViewController()?.present(alertController, animated: true, completion: nil)
   }
   
-  func alertText(key: String) -> String {
+  private func alertText(key: String) -> String {
     if let text = alertTexts?[key] {
       return text
     } else {
@@ -182,7 +182,7 @@ public extension PCIView {
   }
 }
 
-public extension String {
+private extension String {
   func podLocalized() -> String {
     return self.podLocalized(PCIView.classForCoder())
   }
@@ -191,7 +191,7 @@ public extension String {
     return getBundleTranslation(Bundle(for:bundleClass))
   }
   
-  fileprivate func getBundleTranslation(_ bundle:Bundle) -> String {
+  func getBundleTranslation(_ bundle:Bundle) -> String {
     var language =  Locale.preferredLanguages[0].lowercased()
     let path = bundle.path(forResource: language, ofType: "lproj")
     if let path = path, let languageBundle = Bundle(path: path) {
@@ -211,7 +211,7 @@ public extension String {
     }
   }
   
-  fileprivate func prefixUntil(_ string:String) -> String {
+  func prefixUntil(_ string:String) -> String {
     if let range = self.range(of: string) {
       let intIndex: Int = self.distance(from: self.startIndex, to: range.lowerBound)
       return self.prefixOf(intIndex)!
@@ -219,7 +219,7 @@ public extension String {
     return self
   }
   
-  fileprivate func prefixOf(_ size:Int) -> String? {
+  func prefixOf(_ size:Int) -> String? {
     return String(self.prefix(size))
   }
 }

@@ -80,19 +80,35 @@ You can, also, define the css styles of various components, including:
 1. CVV field.
 1. Exp. Date field
 
-To customise the PCI look and feel, you can use the follwing snippet:
+### Styling elements
+
+To customise the PCI look and feel, you can use the following snippet:
 
 ```swift
 pciView.showPan = true
 pciView.showCvv = false
 pciView.showExp = false
 pciView.styles = [
-  "container": "IFrame CSS Styles",
+  "container": "color: red",
   "content": [
-    "pan": "PAN CSS Styles",
-    "cvv": "CVV CSS Styles",
-    "exp": "Exp. Date CSS Styles"
+    "pan": "color: blue",
+    "cvv": "color: yellow",
+    "exp": "color: green"
   ]
+]
+```
+
+### Text customization
+
+To customize the different texts shown in alerts, you can use the following attribute:
+
+```swift
+pciView.alertTexts = [
+    "inputCode.message": "What's your secret code?",
+    "inputCode.okAction": "Ok",
+    "inputCode.cancelAction": "Cancel",
+    "wrongCode.message": "Invalid code",
+    "wrongCode.okAction": "Ok"
 ]
 ```
 

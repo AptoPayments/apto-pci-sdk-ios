@@ -62,5 +62,11 @@ class AptoPCISDK {
     }
 }
 
+try {
+    window.AptoPCISDK = new AptoPCISDK(document.getElementById('apto-iframe').contentWindow);
+} catch (error) {
+    console.log('Error on instantiate');
+}
+
 module.exports = { AptoPCISDK };
 },{}]},{},[1]);
