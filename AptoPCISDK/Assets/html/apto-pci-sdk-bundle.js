@@ -10,7 +10,7 @@ class AptoPCISDK {
         this.styleIframe = this.styleIframe.bind(this);
     }
 
-    initialise(apiKey, userToken, cardId, lastFour, environment) {
+    initialise(apiKey, userToken, cardId, lastFour, environment, name) {
         try {
             const initialise = JSON.stringify({
                 event: 'AptoPCISDK:initialise', 
@@ -18,7 +18,8 @@ class AptoPCISDK {
                 userToken: userToken,
                 cardId: cardId, 
                 lastFour: lastFour,
-                environment: environment
+                environment: environment,
+                name: name,
             });
             this.window.postMessage(initialise, '*');
         } catch (error) {

@@ -32,6 +32,22 @@ public class PCIView: UIView, WKNavigationDelegate, WKUIDelegate {
       customiseUI()
     }
   }
+  @objc public var showName: Bool = true {
+    didSet {
+      customiseUI()
+    }
+  }
+  @objc public var isCvvVisible: Bool = true {
+    didSet {
+      customiseUI()
+    }
+  }
+  @objc public var isExpVisible: Bool = true {
+    didSet {
+      customiseUI()
+    }
+  }
+
   @objc public var alertTexts: [String: String]?
   
   override init(frame: CGRect) {
@@ -46,10 +62,14 @@ public class PCIView: UIView, WKNavigationDelegate, WKUIDelegate {
     initWebView()
   }
   
-  @objc public func initialise(apiKey: String, userToken: String, cardId: String, lastFour: String, environment: String) {
+  @objc public func initialise(apiKey: String, userToken: String, cardId: String, lastFour: String, environment: String, name: String? = nil) {
+    var parameters = "'\(apiKey)', '\(userToken)', '\(cardId)', '\(lastFour)', '\(environment)'"
+    if let name = name {
+      parameters += ", '\(name)'"
+    }
     queue.addOperation(WebViewOperation(
       webView: webView,
-      javascript: "\(javascriptPrefix).initialise('\(apiKey)', '\(userToken)', '\(cardId)', '\(lastFour)', '\(environment)')"
+      javascript: "\(javascriptPrefix).initialise(\(parameters))"
     ))
   }
   
@@ -75,7 +95,13 @@ public class PCIView: UIView, WKNavigationDelegate, WKUIDelegate {
   }
   
   private func customiseUI() {
-    if let flagsString = dictToString(dict: ["showPan": showPan, "showCvv": showCvv, "showExp": showExp]),
+    if let flagsString = dictToString(dict: ["showPan": showPan,
+                                             "showCvv": showCvv,
+                                             "showExp": showExp,
+                                             "showName": showName,
+                                             "isCvvVisible": isCvvVisible,
+                                             "isExpVisible": isExpVisible
+    ]),
       let stylesString = dictToString(dict: styles){
       queue.addOperation(WebViewOperation(
         webView: webView,
@@ -131,7 +157,7 @@ internal class WebViewOperation: Operation {
 
   override func main() {
     dispatchQueue.async {
-        self.webView.evaluateJavaScript(self.javascript)
+      self.webView.evaluateJavaScript(self.javascript)
     }
   }
 }
@@ -148,7 +174,7 @@ public extension PCIView {
       completionHandler()
     }))
     
-    UIApplication.topViewController()?.present(alertController, animated: true, completion: nil)
+    findViewController()?.present(alertController, animated: true, completion: nil)
   }
   
   func webView(_ webView: WKWebView, runJavaScriptTextInputPanelWithPrompt prompt: String, defaultText: String?,
@@ -170,7 +196,7 @@ public extension PCIView {
       completionHandler(nil)
     }))
     
-    UIApplication.topViewController()?.present(alertController, animated: true, completion: nil)
+    findViewController()?.present(alertController, animated: true, completion: nil)
   }
   
   private func alertText(key: String) -> String {
@@ -224,3 +250,14 @@ private extension String {
   }
 }
 
+extension UIView {
+  func findViewController() -> UIViewController? {
+    if let nextResponder = self.next as? UIViewController {
+      return nextResponder
+    } else if let nextResponder = self.next as? UIView {
+      return nextResponder.findViewController()
+    } else {
+      return nil
+    }
+  }
+}
