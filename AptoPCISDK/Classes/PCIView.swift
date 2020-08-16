@@ -49,19 +49,19 @@ public class PCIView: UIView, WKNavigationDelegate, WKUIDelegate {
   }
 
   @objc public var alertTexts: [String: String]?
-  
+
   override init(frame: CGRect) {
     super.init(frame: frame)
     initQueue()
     initWebView()
   }
-  
+
   required init?(coder aDecoder: NSCoder) {
     super.init(coder: aDecoder)
     initQueue()
     initWebView()
   }
-  
+
   @objc public func initialise(apiKey: String, userToken: String, cardId: String, lastFour: String, environment: String, name: String? = nil) {
     var parameters = "'\(apiKey)', '\(userToken)', '\(cardId)', '\(lastFour)', '\(environment)'"
     if let name = name {
@@ -72,28 +72,28 @@ public class PCIView: UIView, WKNavigationDelegate, WKUIDelegate {
       javascript: "\(javascriptPrefix).initialise(\(parameters))"
     ))
   }
-  
+
   @objc public func lastFour() {
     queue.addOperation(WebViewOperation(
       webView: webView,
       javascript: "\(javascriptPrefix).lastFour()"
     ))
   }
-  
+
   @objc public func obfuscate() {
     queue.addOperation(WebViewOperation(
       webView: webView,
       javascript: "\(javascriptPrefix).obfuscate()"
     ))
   }
-  
+
   @objc public func reveal() {
     queue.addOperation(WebViewOperation(
       webView: webView,
       javascript: "\(javascriptPrefix).reveal()"
     ))
   }
-  
+
   private func customiseUI() {
     if let flagsString = dictToString(dict: ["showPan": showPan,
                                              "showCvv": showCvv,
@@ -109,7 +109,7 @@ public class PCIView: UIView, WKNavigationDelegate, WKUIDelegate {
       ))
     }
   }
-  
+
   private func dictToString(dict: [String: Any]) -> String? {
     if let data = try? JSONSerialization.data(withJSONObject: dict, options: []) {
       return String(data: data, encoding: .utf8)
@@ -122,13 +122,15 @@ public class PCIView: UIView, WKNavigationDelegate, WKUIDelegate {
     queue.maxConcurrentOperationCount = 1
     queue.isSuspended = true
   }
-  
+
   private func initWebView(){
     webView.translatesAutoresizingMaskIntoConstraints = false
     addSubview(webView)
     webView.isOpaque = false
     webView.backgroundColor = .clear
     webView.scrollView.backgroundColor = .clear
+    webView.scrollView.isScrollEnabled = false
+    webView.isUserInteractionEnabled = false
     NSLayoutConstraint.activate([
       webView.topAnchor.constraint(equalTo: self.topAnchor),
       webView.leftAnchor.constraint(equalTo: self.leftAnchor),
@@ -136,6 +138,7 @@ public class PCIView: UIView, WKNavigationDelegate, WKUIDelegate {
       webView.bottomAnchor.constraint(equalTo: self.bottomAnchor)
     ])
     webView.navigationDelegate = self
+    webView.scrollView.delegate = self
     webView.uiDelegate = self
     let podBundle = Bundle(for: self.classForCoder)
     if let myURL = podBundle.url(forResource: "container", withExtension: "html") {
@@ -162,28 +165,34 @@ internal class WebViewOperation: Operation {
   }
 }
 
+extension PCIView: UIScrollViewDelegate {
+  public func scrollViewWillBeginZooming(_ scrollView: UIScrollView, with view: UIView?) {
+    scrollView.pinchGestureRecognizer?.isEnabled = false
+  }
+}
+
 public extension PCIView {
   func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
     queue.isSuspended = false
   }
-  
+
   func webView(_ webView: WKWebView, runJavaScriptAlertPanelWithMessage message: String,
                initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping () -> Void) {
     let alertController = UIAlertController(title: nil, message: alertText(key: "wrongCode.message"), preferredStyle: .alert)
     alertController.addAction(UIAlertAction(title: alertText(key: "wrongCode.okAction"), style: .default, handler: { action in
       completionHandler()
     }))
-    
+
     findViewController()?.present(alertController, animated: true, completion: nil)
   }
-  
+
   func webView(_ webView: WKWebView, runJavaScriptTextInputPanelWithPrompt prompt: String, defaultText: String?,
                initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping (String?) -> Void) {
     let alertController = UIAlertController(title: nil, message: alertText(key: "inputCode.message"), preferredStyle: .alert)
     alertController.addTextField(configurationHandler: { textField in
       textField.text = defaultText
     })
-    
+
     alertController.addAction(UIAlertAction(title: alertText(key: "inputCode.okAction"), style: .default, handler: { action in
       if let text = alertController.textFields?.first?.text {
         completionHandler(text)
@@ -191,14 +200,14 @@ public extension PCIView {
         completionHandler(defaultText)
       }
     }))
-    
+
     alertController.addAction(UIAlertAction(title: alertText(key: "inputCode.cancelAction"), style: .default, handler: { action in
       completionHandler(nil)
     }))
-    
+
     findViewController()?.present(alertController, animated: true, completion: nil)
   }
-  
+
   private func alertText(key: String) -> String {
     if let text = alertTexts?[key] {
       return text
@@ -212,11 +221,11 @@ private extension String {
   func podLocalized() -> String {
     return self.podLocalized(PCIView.classForCoder())
   }
-  
+
   func podLocalized(_ bundleClass:AnyClass) -> String {
     return getBundleTranslation(Bundle(for:bundleClass))
   }
-  
+
   func getBundleTranslation(_ bundle:Bundle) -> String {
     var language =  Locale.preferredLanguages[0].lowercased()
     let path = bundle.path(forResource: language, ofType: "lproj")
@@ -236,7 +245,7 @@ private extension String {
       }
     }
   }
-  
+
   func prefixUntil(_ string:String) -> String {
     if let range = self.range(of: string) {
       let intIndex: Int = self.distance(from: self.startIndex, to: range.lowerBound)
@@ -244,7 +253,7 @@ private extension String {
     }
     return self
   }
-  
+
   func prefixOf(_ size:Int) -> String? {
     return String(self.prefix(size))
   }
@@ -261,3 +270,4 @@ extension UIView {
     }
   }
 }
+
