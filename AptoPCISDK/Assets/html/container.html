@@ -1,12 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="utf-8">
-		<title>PCI SDK Iframe</title>
-		<meta name="viewport" content="width=device-width,initial-scale=1">
-    </head>
-	<body>
-		<iframe frameBorder="0" id="apto-iframe" src="https://pci-web.ux.aptopayments.com/index-31e490bf201504be207784544c8422f8.html"></iframe>
-		<script src="./apto-pci-sdk-bundle.js"></script>
-	</body>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <style>
+       html,
+       body,
+       #apto-pci-sdk {
+        height: 100%;
+       }
+       body {
+        padding: 0;
+        margin: 0;
+       }
+    </style>
+  </head>
+  <body>
+    <div id="apto-pci-sdk"></div>
+    <script src="https://cdn.jsdelivr.net/npm/@apto-payments/pci-sdk-web@2.0/dist/umd/apto-pci-sdk.min.js"></script>
+  </body>
 </html>

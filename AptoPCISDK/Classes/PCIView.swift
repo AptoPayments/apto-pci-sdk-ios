@@ -11,43 +11,7 @@ import WebKit
 public class PCIView: UIView, WKNavigationDelegate, WKUIDelegate {
   let webView = WKWebView(frame: .zero, configuration: WKWebViewConfiguration())
   var queue = OperationQueue()
-  private let javascriptPrefix = "window.AptoPCISDK"
-  @objc public var styles: [String: Any] = [:] {
-    didSet {
-      customiseUI()
-    }
-  }
-  @objc public var showCvv: Bool = true {
-    didSet {
-      customiseUI()
-    }
-  }
-  @objc public var showExp: Bool = true {
-    didSet {
-      customiseUI()
-    }
-  }
-  @objc public var showPan: Bool = true {
-    didSet {
-      customiseUI()
-    }
-  }
-  @objc public var showName: Bool = true {
-    didSet {
-      customiseUI()
-    }
-  }
-  @objc public var isCvvVisible: Bool = true {
-    didSet {
-      customiseUI()
-    }
-  }
-  @objc public var isExpVisible: Bool = true {
-    didSet {
-      customiseUI()
-    }
-  }
-
+  private let javascriptPrefix = "window.AptoPCISdk"
   @objc public var alertTexts: [String: String]?
 
   override init(frame: CGRect) {
@@ -62,53 +26,61 @@ public class PCIView: UIView, WKNavigationDelegate, WKUIDelegate {
     initWebView()
   }
 
-  @objc public func initialise(apiKey: String, userToken: String, cardId: String, lastFour: String, environment: String, name: String? = nil) {
-    var parameters = "'\(apiKey)', '\(userToken)', '\(cardId)', '\(lastFour)', '\(environment)'"
-    if let name = name {
-      parameters += ", '\(name)'"
+  @objc public func initialise(config: PCIConfig) {
+    let jsonData = try! JSONEncoder().encode(config)
+    let jsonString = String(data: jsonData, encoding: .utf8)!
+    sendActionToJs(action: "\(javascriptPrefix).init(\(jsonString))")
+  }
+
+  @objc public func setTheme(theme: String) {
+    sendActionToJs(action: "\(javascriptPrefix).setTheme('\(theme)')")
+  }
+
+  @objc public func setStyle(style: PCIConfigStyle) {
+    sendActionToJs(action: "\(javascriptPrefix).setStyle(\(style.configString()))")
+  }
+
+  @objc public func showPCIData() {
+    sendActionToJs(action: "\(javascriptPrefix).showPCIData()")
+  }
+
+  @objc public func hidePCIData() {
+    sendActionToJs(action: "\(javascriptPrefix).hidePCIData()")
+  }
+
+  private func sendActionToJs(action: String) {
+    queue.addOperation(WebViewOperation(
+      webView: webView,
+      javascript: action
+    ))
+  }
+}
+
+internal class WebViewOperation: Operation {
+  let javascript: String
+  let webView: WKWebView
+  let dispatchQueue: DispatchQueue
+
+  init(webView: WKWebView, javascript: String, on: DispatchQueue? = nil) {
+    self.javascript = javascript
+    self.webView = webView
+    self.dispatchQueue = on ?? DispatchQueue.main
+  }
+
+  override func main() {
+    dispatchQueue.async {
+      self.webView.evaluateJavaScript(self.javascript)
     }
-    queue.addOperation(WebViewOperation(
-      webView: webView,
-      javascript: "\(javascriptPrefix).initialise(\(parameters))"
-    ))
   }
+}
 
-  @objc public func lastFour() {
-    queue.addOperation(WebViewOperation(
-      webView: webView,
-      javascript: "\(javascriptPrefix).lastFour()"
-    ))
+extension PCIView: UIScrollViewDelegate {
+  public func scrollViewWillBeginZooming(_ scrollView: UIScrollView, with view: UIView?) {
+    scrollView.pinchGestureRecognizer?.isEnabled = false
   }
+}
 
-  @objc public func obfuscate() {
-    queue.addOperation(WebViewOperation(
-      webView: webView,
-      javascript: "\(javascriptPrefix).obfuscate()"
-    ))
-  }
-
-  @objc public func reveal() {
-    queue.addOperation(WebViewOperation(
-      webView: webView,
-      javascript: "\(javascriptPrefix).reveal()"
-    ))
-  }
-
-  private func customiseUI() {
-    if let flagsString = dictToString(dict: ["showPan": showPan,
-                                             "showCvv": showCvv,
-                                             "showExp": showExp,
-                                             "showName": showName,
-                                             "isCvvVisible": isCvvVisible,
-                                             "isExpVisible": isExpVisible
-    ]),
-      let stylesString = dictToString(dict: styles){
-      queue.addOperation(WebViewOperation(
-        webView: webView,
-        javascript: "\(javascriptPrefix).customiseUI('\(flagsString)', '\(stylesString)')"
-      ))
-    }
-  }
+private extension PCIView {
 
   private func dictToString(dict: [String: Any]) -> String? {
     if let data = try? JSONSerialization.data(withJSONObject: dict, options: []) {
@@ -144,30 +116,6 @@ public class PCIView: UIView, WKNavigationDelegate, WKUIDelegate {
     if let myURL = podBundle.url(forResource: "container", withExtension: "html") {
       webView.loadFileURL(myURL, allowingReadAccessTo: myURL.deletingLastPathComponent())
     }
-  }
-}
-
-internal class WebViewOperation: Operation {
-  let javascript: String
-  let webView: WKWebView
-  let dispatchQueue: DispatchQueue
-
-  init(webView: WKWebView, javascript: String, on: DispatchQueue? = nil) {
-    self.javascript = javascript
-    self.webView = webView
-    self.dispatchQueue = on ?? DispatchQueue.main
-  }
-
-  override func main() {
-    dispatchQueue.async {
-      self.webView.evaluateJavaScript(self.javascript)
-    }
-  }
-}
-
-extension PCIView: UIScrollViewDelegate {
-  public func scrollViewWillBeginZooming(_ scrollView: UIScrollView, with view: UIView?) {
-    scrollView.pinchGestureRecognizer?.isEnabled = false
   }
 }
 
@@ -271,3 +219,81 @@ extension UIView {
   }
 }
 
+public class PCIConfig: NSObject, Codable {
+  let configAuth: PCIConfigAuth
+  let theme: String?
+  let configCard: PCIConfigCard?
+  public init(configAuth: PCIConfigAuth, configCard: PCIConfigCard?, theme: String? = "light") {
+    self.configAuth = configAuth
+    self.configCard = configCard
+    self.theme = theme
+  }
+  enum CodingKeys: String, CodingKey {
+    case configAuth = "auth"
+    case theme
+    case configCard = "values"
+  }
+}
+
+public class PCIConfigAuth: NSObject, Codable {
+  let cardId: String
+  let apiKey: String
+  let userToken: String
+  let environment: PCIEnvironment
+  public init(cardId: String, apiKey: String, userToken: String, environment: PCIEnvironment) {
+    self.cardId = cardId
+    self.apiKey = apiKey
+    self.userToken = userToken
+    self.environment = environment
+  }
+  enum CodingKeys: String, CodingKey {
+    case cardId
+    case apiKey
+    case userToken
+    case environment
+  }
+}
+
+public enum PCIEnvironment: String, Codable {
+  case stg
+  case sbx
+  case prd
+}
+
+public class PCIConfigCard: Codable {
+  let lastFour: String?
+  let labelPan: String?
+  let labelCvv: String?
+  let labelExp: String?
+  let labelName: String?
+  let nameOnCard: String?
+  public init(lastFour: String? = nil, labelPan: String? = nil, labelCvv: String? = nil, labelExp: String? = nil, labelName: String? = nil, nameOnCard: String? = nil) {
+    self.lastFour = lastFour
+    self.labelPan = labelPan
+    self.labelCvv = labelCvv
+    self.labelExp = labelExp
+    self.labelName = labelName
+    self.nameOnCard = nameOnCard
+  }
+}
+
+public class PCIConfigStyle: NSObject {
+  let theme: String
+  let textColor: String?
+  public init(theme: String, textColor: String?) {
+    self.theme = theme
+    self.textColor = textColor
+  }
+  public func configString() -> String {
+    let styledParameters = StyleParameters(extends: theme, container: StyleParameters.ContainerStyle(color: textColor))
+    let jsonData = try! JSONEncoder().encode(styledParameters)
+    return String(data: jsonData, encoding: .utf8)!
+  }
+  struct StyleParameters: Codable {
+    let extends: String
+    let container: ContainerStyle
+    struct ContainerStyle: Codable {
+      let color: String?
+    }
+  }
+}
