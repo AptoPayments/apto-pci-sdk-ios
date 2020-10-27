@@ -1,9 +1,8 @@
 # AptoPCISDK
 
-[![CI Status](https://img.shields.io/travis/ioliver/AptoPCISDK.svg?style=flat)](https://travis-ci.org/ioliver/AptoPCISDK)
-[![Version](https://img.shields.io/cocoapods/v/AptoPCISDK.svg?style=flat)](https://cocoapods.org/pods/AptoPCISDK)
-[![License](https://img.shields.io/cocoapods/l/AptoPCISDK.svg?style=flat)](https://cocoapods.org/pods/AptoPCISDK)
-[![Platform](https://img.shields.io/cocoapods/p/AptoPCISDK.svg?style=flat)](https://cocoapods.org/pods/AptoPCISDK)
+[![Version](https://img.shields.io/cocoapods/v/AptoPCI.svg?style=flat)](https://cocoapods.org/pods/AptoPCISDK)
+[![License](https://img.shields.io/cocoapods/l/AptoPCI.svg?style=flat)](https://cocoapods.org/pods/AptoPCISDK)
+[![Platform](https://img.shields.io/cocoapods/p/AptoPCI.svg?style=flat)](https://cocoapods.org/pods/AptoPCISDK)
 
 ## Example
 
