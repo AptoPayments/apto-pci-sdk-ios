@@ -8,12 +8,19 @@
 import UIKit
 import WebKit
 
-public class PCIView: UIView, WKNavigationDelegate, WKUIDelegate {
+protocol PCIDataAction {
+    func showPCIData()
+    func hidePCIData()
+}
+
+public class PCIView: UIView, WKNavigationDelegate, WKUIDelegate, PCIDataAction {
   let webView = WKWebView(frame: .zero, configuration: WKWebViewConfiguration())
   var queue = OperationQueue()
   private let javascriptPrefix = "window.AptoPCISdk"
   @objc public var alertTexts: [String: String]?
 
+    private(set) var isDialogShown = false
+    
   override init(frame: CGRect) {
     super.init(frame: frame)
     initQueue()
@@ -45,7 +52,9 @@ public class PCIView: UIView, WKNavigationDelegate, WKUIDelegate {
   }
 
   @objc public func hidePCIData() {
-    sendActionToJs(action: "\(javascriptPrefix).hidePCIData()")
+    if !isDialogShown {
+        sendActionToJs(action: "\(javascriptPrefix).hidePCIData()")
+    }
   }
 
   private func sendActionToJs(action: String) {
@@ -124,37 +133,44 @@ public extension PCIView {
     queue.isSuspended = false
   }
 
-  func webView(_ webView: WKWebView, runJavaScriptAlertPanelWithMessage message: String,
-               initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping () -> Void) {
-    let alertController = UIAlertController(title: nil, message: alertText(key: "wrongCode.message"), preferredStyle: .alert)
-    alertController.addAction(UIAlertAction(title: alertText(key: "wrongCode.okAction"), style: .default, handler: { action in
-      completionHandler()
-    }))
-
-    findViewController()?.present(alertController, animated: true, completion: nil)
-  }
-
-  func webView(_ webView: WKWebView, runJavaScriptTextInputPanelWithPrompt prompt: String, defaultText: String?,
-               initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping (String?) -> Void) {
-    let alertController = UIAlertController(title: nil, message: alertText(key: "inputCode.message"), preferredStyle: .alert)
-    alertController.addTextField(configurationHandler: { textField in
-      textField.text = defaultText
-    })
-
-    alertController.addAction(UIAlertAction(title: alertText(key: "inputCode.okAction"), style: .default, handler: { action in
-      if let text = alertController.textFields?.first?.text {
-        completionHandler(text)
-      } else {
-        completionHandler(defaultText)
-      }
-    }))
-
-    alertController.addAction(UIAlertAction(title: alertText(key: "inputCode.cancelAction"), style: .default, handler: { action in
-      completionHandler(nil)
-    }))
-
-    findViewController()?.present(alertController, animated: true, completion: nil)
-  }
+    func webView(_ webView: WKWebView, runJavaScriptAlertPanelWithMessage message: String,
+                 initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping () -> Void) {
+        let alertController = UIAlertController(title: nil, message: alertText(key: "wrongCode.message"), preferredStyle: .alert)
+        alertController.addAction(UIAlertAction(title: alertText(key: "wrongCode.okAction"), style: .default, handler: { [weak self] action in
+            completionHandler()
+            self?.isDialogShown = false
+        }))
+        
+        findViewController()?.present(alertController, animated: true, completion: { [weak self] in
+            self?.isDialogShown = true
+        })
+    }
+    
+    func webView(_ webView: WKWebView, runJavaScriptTextInputPanelWithPrompt prompt: String, defaultText: String?,
+                 initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping (String?) -> Void) {
+        let alertController = UIAlertController(title: nil, message: alertText(key: "inputCode.message"), preferredStyle: .alert)
+        alertController.addTextField(configurationHandler: { textField in
+            textField.text = defaultText
+        })
+        
+        alertController.addAction(UIAlertAction(title: alertText(key: "inputCode.okAction"), style: .default, handler: { [weak self] action in
+            if let text = alertController.textFields?.first?.text {
+                completionHandler(text)
+            } else {
+                completionHandler(defaultText)
+            }
+            self?.isDialogShown = false
+        }))
+        
+        alertController.addAction(UIAlertAction(title: alertText(key: "inputCode.cancelAction"), style: .default, handler: { [weak self] action in
+            completionHandler(nil)
+            self?.isDialogShown = false
+        }))
+        
+        findViewController()?.present(alertController, animated: true, completion: { [weak self] in
+            self?.isDialogShown = true
+        })
+    }
 
   private func alertText(key: String) -> String {
     if let text = alertTexts?[key] {
@@ -223,7 +239,7 @@ public class PCIConfig: NSObject, Codable {
   let configAuth: PCIConfigAuth
   let theme: String?
   let configCard: PCIConfigCard?
-  public init(configAuth: PCIConfigAuth, configCard: PCIConfigCard?, theme: String? = "light") {
+  public init(configAuth: PCIConfigAuth, configCard: PCIConfigCard?, theme: String? = nil) {
     self.configAuth = configAuth
     self.configCard = configCard
     self.theme = theme
@@ -278,14 +294,12 @@ public class PCIConfigCard: Codable {
 }
 
 public class PCIConfigStyle: NSObject {
-  let theme: String
   let textColor: String?
-  public init(theme: String, textColor: String?) {
-    self.theme = theme
+  public init(textColor: String?) {
     self.textColor = textColor
   }
   public func configString() -> String {
-    let styledParameters = StyleParameters(extends: theme, container: StyleParameters.ContainerStyle(color: textColor))
+    let styledParameters = StyleParameters(extends: "dark", container: StyleParameters.ContainerStyle(color: textColor))
     let jsonData = try! JSONEncoder().encode(styledParameters)
     return String(data: jsonData, encoding: .utf8)!
   }
