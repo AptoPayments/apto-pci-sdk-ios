@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = "AptoPCI"
-  s.version          = "2.0.1"
+  s.version          = "2.1.0"
   s.summary          = "The Apto platform iOS PCI SDK."
   s.description      = <<-DESC
   Apto iOS PCI SDK. Use this SDK to show card PCI protected data in your app. Please contact us for more information.
@@ -16,7 +16,7 @@ Pod::Spec.new do |s|
   s.homepage         = "https://github.com/AptoPayments/apto-pci-sdk-ios.git"
   s.license          = { :type => 'MIT', :file => 'LICENSE' }
   s.authors          = { "Apto Payments" => "mobile@aptopayments.com" }
-  s.source           = { :git => "https://github.com/AptoPayments/apto-pci-sdk-ios.git", :tag => "2.0.1" }
+  s.source           = { :git => "https://github.com/AptoPayments/apto-pci-sdk-ios.git", :tag => "2.1.0" }
 
   s.platform = :ios
   s.ios.deployment_target = '10.0'

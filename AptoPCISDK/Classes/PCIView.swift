@@ -151,6 +151,9 @@ public extension PCIView {
         let alertController = UIAlertController(title: nil, message: alertText(key: "inputCode.message"), preferredStyle: .alert)
         alertController.addTextField(configurationHandler: { textField in
             textField.text = defaultText
+            if #available(iOS 12.0, *) {
+                textField.textContentType = .oneTimeCode
+            }
         })
         
         alertController.addAction(UIAlertAction(title: alertText(key: "inputCode.okAction"), style: .default, handler: { [weak self] action in
