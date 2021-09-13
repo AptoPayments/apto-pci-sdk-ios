@@ -1,9 +1,8 @@
 # Apto iOS PCI SDK
 
-[![CI Status](https://img.shields.io/travis/ioliver/AptoPCISDK.svg?style=flat)](https://travis-ci.org/ioliver/AptoPCISDK)
-[![Version](https://img.shields.io/cocoapods/v/AptoPCISDK.svg?style=flat)](https://cocoapods.org/pods/AptoPCISDK)
-[![License](https://img.shields.io/cocoapods/l/AptoPCISDK.svg?style=flat)](https://cocoapods.org/pods/AptoPCISDK)
-[![Platform](https://img.shields.io/cocoapods/p/AptoPCISDK.svg?style=flat)](https://cocoapods.org/pods/AptoPCISDK)
+[![Version](https://img.shields.io/cocoapods/v/AptoPCI.svg?style=flat)](https://cocoapods.org/pods/AptoPCI)
+[![License](https://img.shields.io/cocoapods/l/AptoPCI.svg?style=flat)](https://cocoapods.org/pods/AptoPCI)
+[![Platform](https://img.shields.io/cocoapods/p/AptoPCI.svg?style=flat)](https://cocoapods.org/pods/AptoPCI)
 
 
 The Apto iOS PCI SDK provides a transparent `View` that can display the PCI data using a `webView`.
@@ -18,4 +17,4 @@ If you would like to contribute to the SDK development, see [Contributions & Dev
 
 ## License
 
-AptoPCISDK is available under the MIT license. See the [LICENSE file](https://github.com/AptoPayments/apto-pci-sdk-ios/AptoPCISDK/LICENSE) for more info.
+AptoPCISDK is available under the MIT license. See the [LICENSE file](https://github.com/AptoPayments/apto-pci-sdk-ios/blob/master/LICENSE) for more info.

@@ -19,8 +19,6 @@ public class PCIView: UIView, WKNavigationDelegate, WKUIDelegate, PCIDataAction 
   private let javascriptPrefix = "window.AptoPCISdk"
   @objc public var alertTexts: [String: String]?
 
-    private(set) var isDialogShown = false
-    
   override init(frame: CGRect) {
     super.init(frame: frame)
     initQueue()
@@ -52,9 +50,7 @@ public class PCIView: UIView, WKNavigationDelegate, WKUIDelegate, PCIDataAction 
   }
 
   @objc public func hidePCIData() {
-    if !isDialogShown {
-        sendActionToJs(action: "\(javascriptPrefix).hidePCIData()")
-    }
+    sendActionToJs(action: "\(javascriptPrefix).hidePCIData()")
   }
 
   private func sendActionToJs(action: String) {
@@ -111,7 +107,7 @@ private extension PCIView {
     webView.backgroundColor = .clear
     webView.scrollView.backgroundColor = .clear
     webView.scrollView.isScrollEnabled = false
-    webView.isUserInteractionEnabled = false
+    webView.isUserInteractionEnabled = true
     NSLayoutConstraint.activate([
       webView.topAnchor.constraint(equalTo: self.topAnchor),
       webView.leftAnchor.constraint(equalTo: self.leftAnchor),
@@ -131,56 +127,6 @@ private extension PCIView {
 public extension PCIView {
   func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
     queue.isSuspended = false
-  }
-
-    func webView(_ webView: WKWebView, runJavaScriptAlertPanelWithMessage message: String,
-                 initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping () -> Void) {
-        let alertController = UIAlertController(title: nil, message: alertText(key: "wrongCode.message"), preferredStyle: .alert)
-        alertController.addAction(UIAlertAction(title: alertText(key: "wrongCode.okAction"), style: .default, handler: { [weak self] action in
-            completionHandler()
-            self?.isDialogShown = false
-        }))
-        
-        findViewController()?.present(alertController, animated: true, completion: { [weak self] in
-            self?.isDialogShown = true
-        })
-    }
-    
-    func webView(_ webView: WKWebView, runJavaScriptTextInputPanelWithPrompt prompt: String, defaultText: String?,
-                 initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping (String?) -> Void) {
-        let alertController = UIAlertController(title: nil, message: alertText(key: "inputCode.message"), preferredStyle: .alert)
-        alertController.addTextField(configurationHandler: { textField in
-            textField.text = defaultText
-            if #available(iOS 12.0, *) {
-                textField.textContentType = .oneTimeCode
-            }
-        })
-        
-        alertController.addAction(UIAlertAction(title: alertText(key: "inputCode.okAction"), style: .default, handler: { [weak self] action in
-            if let text = alertController.textFields?.first?.text {
-                completionHandler(text)
-            } else {
-                completionHandler(defaultText)
-            }
-            self?.isDialogShown = false
-        }))
-        
-        alertController.addAction(UIAlertAction(title: alertText(key: "inputCode.cancelAction"), style: .default, handler: { [weak self] action in
-            completionHandler(nil)
-            self?.isDialogShown = false
-        }))
-        
-        findViewController()?.present(alertController, animated: true, completion: { [weak self] in
-            self?.isDialogShown = true
-        })
-    }
-
-  private func alertText(key: String) -> String {
-    if let text = alertTexts?[key] {
-      return text
-    } else {
-      return key.podLocalized()
-    }
   }
 }
 
@@ -223,18 +169,6 @@ private extension String {
 
   func prefixOf(_ size:Int) -> String? {
     return String(self.prefix(size))
-  }
-}
-
-extension UIView {
-  func findViewController() -> UIViewController? {
-    if let nextResponder = self.next as? UIViewController {
-      return nextResponder
-    } else if let nextResponder = self.next as? UIView {
-      return nextResponder.findViewController()
-    } else {
-      return nil
-    }
   }
 }
 
