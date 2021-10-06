@@ -7,13 +7,13 @@
 
 The Apto iOS PCI SDK provides a transparent `View` that can display the PCI data using a `webView`.
 
-For more information about the SDK and deployment, see the [iOS PCI SDK docs](http://docs.aptopayments.com/docs/pci-sdk-ios)
+For more information about the SDK and deployment, see the [iOS PCI SDK docs](https://docs.aptopayments.com/docs/sdks/iOS/pci_sdk_ios)
 
 ## Contributions & Development
 
 We look forward to receiving your feedback, including new feature requests, bug fixes and documentation improvements.
 
-If you would like to contribute to the SDK development, see [Contributions & Development](http://docs.aptopayments.com/docs/pci-sdk-ios#contributions--development).
+If you would like to contribute to the SDK development, see [Contributions & Development](https://docs.aptopayments.com/docs/sdks/iOS/pci_sdk_ios#contributions--development).
 
 ## License
 

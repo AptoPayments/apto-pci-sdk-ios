@@ -11,6 +11,7 @@ import WebKit
 protocol PCIDataAction {
     func showPCIData()
     func hidePCIData()
+    func showSetPinForm()
 }
 
 public class PCIView: UIView, WKNavigationDelegate, WKUIDelegate, PCIDataAction {
@@ -51,6 +52,10 @@ public class PCIView: UIView, WKNavigationDelegate, WKUIDelegate, PCIDataAction 
 
   @objc public func hidePCIData() {
     sendActionToJs(action: "\(javascriptPrefix).hidePCIData()")
+  }
+
+  @objc public func showSetPinForm() {
+    sendActionToJs(action: "\(javascriptPrefix).showSetPinForm()")
   }
 
   private func sendActionToJs(action: String) {
