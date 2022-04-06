@@ -225,13 +225,16 @@ public class PCIConfigCard: Codable {
     let labelExp: String?
     let labelName: String?
     let nameOnCard: String?
-    public init(lastFour: String? = nil, labelPan: String? = nil, labelCvv: String? = nil, labelExp: String? = nil, labelName: String? = nil, nameOnCard: String? = nil) {
+    let otpSubmitButton: String?
+    
+    public init(lastFour: String? = nil, labelPan: String? = nil, labelCvv: String? = nil, labelExp: String? = nil, labelName: String? = nil, nameOnCard: String? = nil, otpSubmitButton: String? = nil) {
         self.lastFour = lastFour
         self.labelPan = labelPan
         self.labelCvv = labelCvv
         self.labelExp = labelExp
         self.labelName = labelName
         self.nameOnCard = nameOnCard
+        self.otpSubmitButton = otpSubmitButton
     }
 }
 
@@ -241,26 +244,31 @@ public class PCIConfigStyle: NSObject {
     let labelName: [String: String]?
     let labelCvv: [String: String]?
     let labelExp: [String: String]?
+    let otpSubmitButton: [String: String]?
     
     public init(textColor: String?,
                 labelPan: [String : String]? = nil,
                 labelName: [String : String]? = nil,
                 labelCvv: [String : String]? = nil,
-                labelExp: [String : String]? = nil) {
+                labelExp: [String : String]? = nil,
+                otpSubmitButton: [String: String]? = nil) {
         self.textColor = textColor
         self.labelPan = labelPan
         self.labelName = labelName
         self.labelCvv = labelCvv
         self.labelExp = labelExp
+        self.otpSubmitButton = otpSubmitButton
     }
 
     public func configString() -> String {
+        let inlineFormStyles = (otpSubmitButton != nil) ? StyleParameters.InlineFormStyle(submit: otpSubmitButton) : nil;
         let styledParameters = StyleParameters(extends: "dark",
                                                container: StyleParameters.ContainerStyle(color: textColor),
                                                labelPan: labelPan,
                                                labelName: labelName,
                                                labelCvv: labelCvv,
-                                               labelExp: labelExp)
+                                               labelExp: labelExp,
+                                               inlineForm: inlineFormStyles)
         let jsonData = try! JSONEncoder().encode(styledParameters)
         return String(data: jsonData, encoding: .utf8)!
     }
@@ -272,9 +280,14 @@ public class PCIConfigStyle: NSObject {
         var labelName: [String: String]?
         var labelCvv: [String: String]?
         var labelExp: [String: String]?
-
+        var inlineForm: InlineFormStyle?
+        
         struct ContainerStyle: Codable {
             let color: String?
+        }
+        
+        struct InlineFormStyle: Codable {
+            var submit: [String: String]? = nil
         }
     }
 }
